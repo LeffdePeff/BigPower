@@ -4,7 +4,7 @@ extern crate gio;
 use gtk::prelude::*;
 use gio::prelude::*;
 
-use gmp;
+use gmp::mpz::Mpz;
 
 use std::fs;
 
@@ -31,7 +31,7 @@ fn main()
         let log_label: gtk::Label = builder.get_object("log_label").unwrap();
 
         calculate_button.connect_clicked(move |_| {
-            let first_number = gmp::mpz::Mpz::from(first_number_entry.get_text().to_string().parse::<i32>().unwrap());
+            let first_number = Mpz::from(first_number_entry.get_text().to_string().parse::<i32>().unwrap());
             let second_number = second_number_entry.get_text().to_string().parse::<u32>().unwrap();
             let calculate_length_bool = calculate_length.get_active();
             let file_name = first_number.to_string() + "^" + second_number.to_string().as_str() + "_answer.txt";
