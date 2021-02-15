@@ -23,7 +23,6 @@ fn main()
         window.set_default_size(350, 200);
         window.set_application(Some(app));
         window.set_title("BigPower");
-        window.set_icon_from_file("../icon.ico").expect("Failed to initialize icon");
 
         let first_number_entry: gtk::Entry = builder.get_object("first_number_entry").unwrap();
         let second_number_entry: gtk::Entry = builder.get_object("second_number_entry").unwrap();
