@@ -1,50 +1,74 @@
+extern crate gtk;
+extern crate gio;
+
+use gtk::prelude::*;
+use gio::prelude::*;
+
 use gmp;
 
 use std::fs;
-use std::io::stdin;
 
 fn main()
-{   
-    let num1 = gmp::mpz::Mpz::from(get_input("Enter first number: ").trim().parse::<i32>().unwrap());
-    let num2 = get_input("Enter second number: ").trim().parse::<u32>().unwrap();
-    let length_bool:bool = get_input("Calculate length? true/false").trim().parse().unwrap();
-    let file_name = num1.to_string() + "^" + num2.to_string().as_str() + "_answer.txt";
-    let file_name_length = num1.to_string() + "^" + num2.to_string().as_str() + "_length.txt";
+{
+    let application = gtk::Application::new(
+        Some("com.leffdepeff.big_power"),
+        Default::default(),
+    ).expect("failed to initialize GTK application");
 
-    println!("Calculating...");
-    let answer = num1.pow(num2);
+    application.connect_activate( |app| {
+        let glade_src = include_str!("../gtk_layout.glade");
+        let builder = gtk::Builder::from_string(glade_src);
+        let window: gtk::Window = builder.get_object("application_window").unwrap();
 
-    println!("Converting answer to string...");
-    let str_answer = answer.to_string();
+        window.set_default_size(350, 200);
+        window.set_application(Some(app));
+        window.set_title("BigPower");
 
-    if length_bool {
-        println!("Calculating length...");
-        let answer_len = str_answer.len();
+        let first_number_entry: gtk::Entry = builder.get_object("first_number_entry").unwrap();
+        let second_number_entry: gtk::Entry = builder.get_object("second_number_entry").unwrap();
+        let calculate_button: gtk::Button = builder.get_object("calculate_button").unwrap();
+        let calculate_length: gtk::CheckButton = builder.get_object("calculate_length").unwrap();
+        let log_label: gtk::Label = builder.get_object("log_label").unwrap();
 
-        println!("The answer has {} numbers.", answer_len);
-        
-        if answer_len <= 20 {
-            println!("The answer is: {}", str_answer);
-        }
+        calculate_button.connect_clicked(move |_| {
+            let first_number = gmp::mpz::Mpz::from(first_number_entry.get_text().to_string().parse::<i32>().unwrap());
+            let second_number = second_number_entry.get_text().to_string().parse::<u32>().unwrap();
+            let calculate_length_bool = calculate_length.get_active();
+            let file_name = first_number.to_string() + "^" + second_number.to_string().as_str() + "_answer.txt";
+            let file_name_length = first_number.to_string() + "^" + second_number.to_string().as_str() + "_length.txt";
 
-        println!("Writing length to {} ...", file_name_length);
-        write_to_file(file_name_length, answer_len.to_string());
-    }
+            log_label.set_text("");
 
-    println!("Writing answer to {} ...", file_name);
-    write_to_file(file_name, str_answer);
+            println!("Calculating...");
+            let answer = first_number.pow(second_number);
 
-    println!("Done!");
+            println!("Converting answer to string...");
+            let answer_string = answer.to_string();
+
+            if calculate_length_bool {
+                println!("Calculating length...");
+                let answer_length = answer_string.len();
+
+                println!("The answer has {} numbers.", answer_length);
+
+                println!("Writing length to {} ...", file_name_length);
+                write_to_file(file_name_length, answer_length.to_string());
+            }
+
+            println!("Writing answer to {} ...", file_name);
+            write_to_file(file_name, answer_string);
+
+            println!("Done!");
+            log_label.set_text("Done!");
+        });
+
+        window.show_all();
+    });
+
+    application.run(&[]);
 }
 
 fn write_to_file(file_name: String, content: String)
 {
     fs::write(file_name, content).expect("Unable to write file");
-}
-
-fn get_input(pr: &str) -> String {
-    println!("{}", pr);
-    let mut buffer = String::new();
-    stdin().read_line(&mut buffer).expect("Failed");
-    buffer
 }
