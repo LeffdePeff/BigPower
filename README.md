@@ -1,2 +1,2 @@
 # BigPower
-Rust command line gmp based big power calculator. 
+Rust command line big power calculator using the gmp library. 
